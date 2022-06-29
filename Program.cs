@@ -1,9 +1,23 @@
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using AirportApplication.Data;
+using AirportApplication.Models;
+
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddDbContext<AirportApplicationContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("AirportApplicationContext") ?? throw new InvalidOperationException("Connection string 'AirportApplicationContext' not found.")));
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    SeedData.Initialize(services);
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
