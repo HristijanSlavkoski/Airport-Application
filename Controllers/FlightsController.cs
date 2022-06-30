@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using AirportApplication.Data;
 using AirportApplication.Models;
+using AirportApplication.ViewModels;
 
 namespace AirportApplication.Controllers
 {
@@ -20,11 +21,29 @@ namespace AirportApplication.Controllers
         }
 
         // GET: Flights
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string Origin, string Destination)
         {
-              return _context.Flight != null ? 
-                          View(await _context.Flight.ToListAsync()) :
-                          Problem("Entity set 'AirportApplicationContext.Flight'  is null.");
+            IQueryable<Flight> flightQuery = _context.Flight.AsQueryable();
+            IQueryable<string> originQuery = _context.Flight.OrderBy(x => x.Origin).Select(x => x.Origin).Distinct();
+            IQueryable<string> destinationQuery = _context.Flight.OrderBy(x => x.Destination).Select(x => x.Destination).Distinct();
+
+            if (!string.IsNullOrEmpty(Origin))
+            {
+                flightQuery = flightQuery.Where(x => x.Origin.Contains(Origin));
+            }
+            if (!string.IsNullOrEmpty(Destination))
+            {
+                flightQuery = flightQuery.Where(x => x.Destination.Contains(Destination));
+            }
+
+            var FlightFilterVM = new FlightFilter
+            {
+                Flights = await flightQuery.ToListAsync(),
+                Origins = new SelectList(await originQuery.ToListAsync()),
+                Destinations = new SelectList(await destinationQuery.ToListAsync()),
+            };
+
+            return View(FlightFilterVM);
         }
 
         // GET: Flights/Details/5

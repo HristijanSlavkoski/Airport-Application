@@ -16,7 +16,6 @@ namespace AirportApplication.Models
         public Flight? Flight { get; set; }
 
         [Required]
-        [DataType(DataType.Currency)]
         [Column(TypeName = "decimal(18,4)")]
         public decimal Price { get; set; }
 
@@ -33,7 +32,7 @@ namespace AirportApplication.Models
         {
             get
             {
-                return DateOfFlight.ToLongDateString();
+                return DateOfFlight.ToShortDateString();
             }
         }
 
@@ -42,7 +41,7 @@ namespace AirportApplication.Models
         {
             get
             {
-                return DateOfFlight.ToLongTimeString();
+                return DateOfFlight.ToShortTimeString();
             }
         }
     }

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using AirportApplication.Data;
 using AirportApplication.Models;
+using AirportApplication.ViewModels;
 
 namespace AirportApplication.Controllers
 {
@@ -20,10 +21,49 @@ namespace AirportApplication.Controllers
         }
 
         // GET: CompanyFlights
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string Title, string Origin, string Destination, string Sort)
         {
-            var airportApplicationContext = _context.CompanyFlight.Include(c => c.Companies).Include(c => c.Flight);
-            return View(await airportApplicationContext.ToListAsync());
+            IQueryable<CompanyFlight> companyFlightQuery = _context.CompanyFlight.AsQueryable().Include(x => x.Flight).Include(x => x.Companies);
+            IQueryable<string> originQuery = _context.CompanyFlight.OrderBy(x => x.Flight.Origin).Select(x => x.Flight.Origin).Distinct();
+            IQueryable<string> destinationQuery = _context.CompanyFlight.OrderBy(x => x.Flight.Destination).Select(x => x.Flight.Destination).Distinct();
+            List<string> sortTypesList = new List<string>(2);
+            sortTypesList.Add("Ascending");
+            sortTypesList.Add("Descending");
+            
+
+            if (!string.IsNullOrEmpty(Title))
+            {
+                companyFlightQuery = companyFlightQuery.Where(x => x.Companies.Title.Contains(Title));
+            }
+            if (!string.IsNullOrEmpty(Origin))
+            {
+                companyFlightQuery = companyFlightQuery.Where(x => x.Flight.Origin.Contains(Origin));
+            }
+            if (!string.IsNullOrEmpty(Destination))
+            {
+                companyFlightQuery = companyFlightQuery.Where(x => x.Flight.Destination.Contains(Destination));
+            }
+            if (!string.IsNullOrEmpty(Sort))
+            {
+                if (string.Compare(Sort, "Ascending") == 0)
+                {
+                    companyFlightQuery = companyFlightQuery.OrderBy(x => x.Price);
+                }
+                else
+                {
+                    companyFlightQuery = companyFlightQuery.OrderByDescending(x => x.Price);
+                }
+            }
+
+            var CompanyFlightFilterVM = new CompanyFlightFilter
+            {
+                CompanyFlights = await companyFlightQuery.ToListAsync(),
+                Origins = new SelectList(await originQuery.ToListAsync()),
+                Destinations = new SelectList(await destinationQuery.ToListAsync()),
+                SortTypes = new SelectList (sortTypesList)
+            };
+
+            return View(CompanyFlightFilterVM);
         }
 
         // GET: CompanyFlights/Details/5
