@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using AirportApplication.Data;
 using AirportApplication.Models;
+using AirportApplication.ViewModels;
 
 namespace AirportApplication.Controllers
 {
@@ -20,11 +21,27 @@ namespace AirportApplication.Controllers
         }
 
         // GET: Companies
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string Title, string Country)
         {
-              return _context.Company != null ? 
-                          View(await _context.Company.ToListAsync()) :
-                          Problem("Entity set 'AirportApplicationContext.Company'  is null.");
+            IQueryable<Company> companyQuery = _context.Company.AsQueryable().Include(x => x.Pilots);
+            IQueryable<string> countriesQuery = _context.Company.OrderBy(x => x.Country).Select(x => x.Country).Distinct();
+
+            if (!string.IsNullOrEmpty(Title))
+            {
+                companyQuery = companyQuery.Where(x => x.Title.Contains(Title));
+            }
+            if (!string.IsNullOrEmpty(Country))
+            {
+                companyQuery = companyQuery.Where(x => x.Country.Contains(Country));
+            }
+
+            var CompanyFilterVM = new CompanyFilter
+            {
+                Companies = await companyQuery.Include(x => x.Pilots).ToListAsync(),
+                Countries = new SelectList(await countriesQuery.ToListAsync())
+            };
+
+            return View(CompanyFilterVM);
         }
 
         // GET: Companies/Details/5

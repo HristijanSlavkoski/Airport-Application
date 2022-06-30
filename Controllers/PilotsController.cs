@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using AirportApplication.Data;
 using AirportApplication.Models;
+using AirportApplication.ViewModels;
 
 namespace AirportApplication.Controllers
 {
@@ -20,10 +21,42 @@ namespace AirportApplication.Controllers
         }
 
         // GET: Pilots
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string FullName, string Rank, string Company)
         {
-            var airportApplicationContext = _context.Pilot.Include(p => p.Company);
-            return View(await airportApplicationContext.ToListAsync());
+            IQueryable<Pilot> pilotsQuery = _context.Pilot.AsQueryable().Include(x => x.Company);
+            IQueryable<string> ranksQuery = _context.Pilot.OrderBy(x => x.Rank).Select(x => x.Rank).Distinct();
+            IQueryable<string> companyQuery = _context.Pilot.OrderBy(x => x.Company.Title).Select(x => x.Company.Title).Distinct();
+
+            if (!string.IsNullOrEmpty(FullName))
+            {
+                if (FullName.Contains(" "))
+                {
+                    string[] names = FullName.Split(" ");
+                    pilotsQuery = pilotsQuery.Where(x => x.FirstName.Contains(names[0]) || x.LastName.Contains(names[1]) ||
+                    x.FirstName.Contains(names[1]) || x.LastName.Contains(names[0]));
+                }
+                else
+                {
+                    pilotsQuery = pilotsQuery.Where(x => x.FirstName.Contains(FullName) || x.LastName.Contains(FullName));
+                }
+            }
+            if (!string.IsNullOrEmpty(Rank))
+            {
+                pilotsQuery = pilotsQuery.Where(x => x.Rank.Contains(Rank));
+            }
+            if (!string.IsNullOrEmpty(Company))
+            {
+                pilotsQuery = pilotsQuery.Where(x => x.Company.Title.Contains(Company));
+            }
+
+            var PilotFilterVM = new PilotFilter
+            {
+                Pilots = await pilotsQuery.Include(x => x.Company).ToListAsync(),
+                Ranks = new SelectList(await ranksQuery.ToListAsync()),
+                Companies = new SelectList(await companyQuery.ToListAsync())
+            };
+
+            return View(PilotFilterVM);
         }
 
         // GET: Pilots/Details/5

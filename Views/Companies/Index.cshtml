@@ -1,34 +1,46 @@
-﻿@model IEnumerable<AirportApplication.Models.Company>
+﻿@model AirportApplication.ViewModels.CompanyFilter
 
 @{
     ViewData["Title"] = "Index";
 }
 
-<h1>Index</h1>
+<h1>Companies</h1>
 
 <p>
     <a asp-action="Create">Create New</a>
 </p>
+
+<form asp-controller="Companies" asp-action="Index" method="get">
+    <p>
+        Title: <input type="text" asp-for="Title" />
+        Country:
+        <select asp-for="Country" asp-items="Model.Countries">
+            <option value="">All</option>
+        </select>
+        <input type="submit" value="Filter" />
+    </p>
+</form>
+
 <table class="table" style="border-color=black">
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Logo)
+                @*@Html.DisplayNameFor(model => model.Logo)*@
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Title)
+                @Html.DisplayNameFor(model => model.Companies[0].Title)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Country)
+                @Html.DisplayNameFor(model => model.Companies[0].Country)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.NumberOfAirplanes)
+                @Html.DisplayNameFor(model => model.Companies[0].NumberOfAirplanes)
             </th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
+@foreach (var item in Model.Companies) {
         <tr>
             <td width=20%> 
                 <img src="~/logos/@item.Logo"
