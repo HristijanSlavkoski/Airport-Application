@@ -1,4 +1,4 @@
-﻿@model AirportApplication.Models.Company
+﻿@model AirportApplication.ViewModels.AddOrEditCompany
 
 @{
     ViewData["Title"] = "Create";
@@ -10,27 +10,35 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Create">
+        <form asp-action="Create" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label asp-for="Title" class="control-label"></label>
-                <input asp-for="Title" class="form-control" />
-                <span asp-validation-for="Title" class="text-danger"></span>
+                <label asp-for="Company.Title" class="control-label"></label>
+                <input asp-for="Company.Title" class="form-control" />
+                <span asp-validation-for="Company.Title" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Country" class="control-label"></label>
-                <input asp-for="Country" class="form-control" />
-                <span asp-validation-for="Country" class="text-danger"></span>
+                <label asp-for="Company.Country" class="control-label"></label>
+                <input asp-for="Company.Country" class="form-control" />
+                <span asp-validation-for="Company.Country" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="NumberOfAirplanes" class="control-label"></label>
-                <input asp-for="NumberOfAirplanes" class="form-control" />
-                <span asp-validation-for="NumberOfAirplanes" class="text-danger"></span>
+                <label asp-for="Company.NumberOfAirplanes" class="control-label"></label>
+                <input asp-for="Company.NumberOfAirplanes" class="form-control" />
+                <span asp-validation-for="Company.NumberOfAirplanes" class="text-danger"></span>
+            </div>
+            <div class="form-group" style="display:none">
+                <label asp-for="Company.Logo" class="control-label"></label>
+                <input asp-for="Company.Logo" class="form-control" readonly="@(true)"/>
+                <span asp-validation-for="Company.Logo" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Logo" class="control-label"></label>
-                <input asp-for="Logo" class="form-control" />
-                <span asp-validation-for="Logo" class="text-danger"></span>
+                <label asp-for="LogoFile" class="control-label"></label>
+                <div class="custom-file">
+                    <input asp-for="LogoFile" class="custom-file-input" id="customFile">
+                    <label class="custom-file-label" for="customFile"></label>
+                    <span asp-validation-for="LogoFile" class="text-danger"></span>
+                </div>
             </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />

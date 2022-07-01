@@ -4,21 +4,17 @@
     ViewData["Title"] = "Index";
 }
 
-<h1>Pilots</h1>
+<h1>Pilots working at "@ViewBag.Message"</h1>
 
 <p>
     <a asp-action="Create">Create New</a>
 </p>
 
-<form asp-controller="Pilots" asp-action="Index" method="get">
+<form asp-controller="Pilots" asp-action="PilotsByCompany" method="get">
     <p>
         First or last name: <input type="text" asp-for="FullName" />
         Rank:
         <select asp-for="Rank" asp-items="Model.Ranks">
-            <option value="">All</option>
-        </select>
-        Company:
-        <select asp-for="Company" asp-items="Model.Companies">
             <option value="">All</option>
         </select>
         <input type="submit" value="Filter" />

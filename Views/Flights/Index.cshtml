@@ -33,6 +33,9 @@
             <th>
                 @Html.DisplayNameFor(model => model.Flights[0].Destination)
             </th>
+            <th>
+                View Flights
+            </th>
             <th></th>
         </tr>
     </thead>
@@ -44,6 +47,9 @@
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Destination)
+            </td>
+            <td>
+               <a asp-controller="CompanyFlights" asp-action="FlightsByDestination" asp-route-id="@item.Id">View Flights</a>
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |

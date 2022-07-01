@@ -7,10 +7,12 @@ namespace AirportApplication.Models
     {
         public long Id { get; set; }
 
+        [Display(Name = "Company")]
         public int CompanyId { get; set; }
         [Display(Name = "Company")]
         public Company? Companies { get; set; }
 
+        [Display(Name = "Flight")]
         public int FlightId { get; set; }
         [Display(Name = "Flight")]
         public Flight? Flight { get; set; }

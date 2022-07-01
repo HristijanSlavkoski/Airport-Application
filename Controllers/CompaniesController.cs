@@ -73,15 +73,28 @@ namespace AirportApplication.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,Country,NumberOfAirplanes,Logo")] Company company)
+        public async Task<IActionResult> Create(AddOrEditCompany viewmodel)
         {
             if (ModelState.IsValid)
             {
+                string uniqueFileName = null;
+                if (viewmodel.LogoFile != null)
+                {
+                    uniqueFileName = UploadedFile(viewmodel);
+                }
+                Company company = new Company
+                {
+                    Title = viewmodel.Company.Title,
+                    Country = viewmodel.Company.Country,
+                    NumberOfAirplanes = viewmodel.Company.NumberOfAirplanes,
+                    Logo = uniqueFileName,
+                    Pilots = viewmodel.Company.Pilots
+                };
                 _context.Add(company);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(company);
+            return View(viewmodel);
         }
 
         // GET: Companies/Edit/5
@@ -97,7 +110,14 @@ namespace AirportApplication.Controllers
             {
                 return NotFound();
             }
-            return View(company);
+
+            AddOrEditCompany viewmodel = new AddOrEditCompany
+            {
+                Company = company,
+                LogoName = company.Logo
+            };
+
+            return View(viewmodel);
         }
 
         // POST: Companies/Edit/5
@@ -105,9 +125,9 @@ namespace AirportApplication.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Country,NumberOfAirplanes,Logo")] Company company)
+        public async Task<IActionResult> Edit(int id, AddOrEditCompany viewmodel)
         {
-            if (id != company.Id)
+            if (id != viewmodel.Company.Id)
             {
                 return NotFound();
             }
@@ -116,12 +136,22 @@ namespace AirportApplication.Controllers
             {
                 try
                 {
-                    _context.Update(company);
+                    if (viewmodel.LogoFile != null)
+                    {
+                        string uniqueFileName = UploadedFile(viewmodel);
+                        viewmodel.Company.Logo = uniqueFileName;
+                    }
+                    else
+                    {
+                        viewmodel.Company.Logo = viewmodel.LogoName;
+                    }
+
+                    _context.Update(viewmodel.Company);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!CompanyExists(company.Id))
+                    if (!CompanyExists(viewmodel.Company.Id))
                     {
                         return NotFound();
                     }
@@ -132,7 +162,29 @@ namespace AirportApplication.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(company);
+            return View(viewmodel);
+        }
+
+        private string UploadedFile(AddOrEditCompany viewmodel)
+        {
+            string uniqueFileName = null;
+
+            if (viewmodel.LogoFile != null)
+            {
+                string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/logos");
+                if (!Directory.Exists(uploadsFolder))
+                {
+                    Directory.CreateDirectory(uploadsFolder);
+                }
+                uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(viewmodel.LogoFile.FileName);
+                string fileNameWithPath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                using (var stream = new FileStream(fileNameWithPath, FileMode.Create))
+                {
+                    viewmodel.LogoFile.CopyTo(stream);
+                }
+            }
+            return uniqueFileName;
         }
 
         // GET: Companies/Delete/5

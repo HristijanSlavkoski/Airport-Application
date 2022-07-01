@@ -89,8 +89,8 @@ namespace AirportApplication.Controllers
         // GET: CompanyFlights/Create
         public IActionResult Create()
         {
-            ViewData["CompanyId"] = new SelectList(_context.Company, "Id", "Country");
-            ViewData["FlightId"] = new SelectList(_context.Flight, "Id", "Destination");
+            ViewData["CompanyId"] = new SelectList(_context.Company, "Id", "Title");
+            ViewData["FlightId"] = new SelectList(_context.Flight, "Id", "FlightName");
             return View();
         }
 
@@ -107,8 +107,8 @@ namespace AirportApplication.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CompanyId"] = new SelectList(_context.Company, "Id", "Country", companyFlight.CompanyId);
-            ViewData["FlightId"] = new SelectList(_context.Flight, "Id", "Destination", companyFlight.FlightId);
+            ViewData["CompanyId"] = new SelectList(_context.Company, "Id", "Title", companyFlight.CompanyId);
+            ViewData["FlightId"] = new SelectList(_context.Flight, "Id", "FlightName", companyFlight.FlightId);
             return View(companyFlight);
         }
 
@@ -125,8 +125,8 @@ namespace AirportApplication.Controllers
             {
                 return NotFound();
             }
-            ViewData["CompanyId"] = new SelectList(_context.Company, "Id", "Country", companyFlight.CompanyId);
-            ViewData["FlightId"] = new SelectList(_context.Flight, "Id", "Destination", companyFlight.FlightId);
+            ViewData["CompanyId"] = new SelectList(_context.Company, "Id", "Title", companyFlight.CompanyId);
+            ViewData["FlightId"] = new SelectList(_context.Flight, "Id", "FlightName", companyFlight.FlightId);
             return View(companyFlight);
         }
 
@@ -162,8 +162,8 @@ namespace AirportApplication.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CompanyId"] = new SelectList(_context.Company, "Id", "Country", companyFlight.CompanyId);
-            ViewData["FlightId"] = new SelectList(_context.Flight, "Id", "Destination", companyFlight.FlightId);
+            ViewData["CompanyId"] = new SelectList(_context.Company, "Id", "Title", companyFlight.CompanyId);
+            ViewData["FlightId"] = new SelectList(_context.Flight, "Id", "FlightName", companyFlight.FlightId);
             return View(companyFlight);
         }
 
@@ -209,6 +209,103 @@ namespace AirportApplication.Controllers
         private bool CompanyFlightExists(long id)
         {
           return (_context.CompanyFlight?.Any(e => e.Id == id)).GetValueOrDefault();
+        }
+
+        // GET: FlightsByCompany
+        public async Task<IActionResult> FlightsByCompany(int? Id, string Title, string Origin, string Destination, string Sort)
+        {
+            IQueryable<CompanyFlight> companyFlightQuery = _context.CompanyFlight.Where(x => x.CompanyId == Id).Include(x => x.Flight).Include(x => x.Companies);
+            IQueryable<string> originQuery = _context.CompanyFlight.OrderBy(x => x.Flight.Origin).Select(x => x.Flight.Origin).Distinct();
+            IQueryable<string> destinationQuery = _context.CompanyFlight.OrderBy(x => x.Flight.Destination).Select(x => x.Flight.Destination).Distinct();
+            List<string> sortTypesList = new List<string>(2);
+            sortTypesList.Add("Ascending");
+            sortTypesList.Add("Descending");
+
+            var company = await _context.Company.FirstOrDefaultAsync(m => m.Id == Id);
+            ViewBag.Message = company.Title;
+
+            if (!string.IsNullOrEmpty(Title))
+            {
+                companyFlightQuery = companyFlightQuery.Where(x => x.Companies.Title.Contains(Title));
+            }
+            if (!string.IsNullOrEmpty(Origin))
+            {
+                companyFlightQuery = companyFlightQuery.Where(x => x.Flight.Origin.Contains(Origin));
+            }
+            if (!string.IsNullOrEmpty(Destination))
+            {
+                companyFlightQuery = companyFlightQuery.Where(x => x.Flight.Destination.Contains(Destination));
+            }
+            if (!string.IsNullOrEmpty(Sort))
+            {
+                if (string.Compare(Sort, "Ascending") == 0)
+                {
+                    companyFlightQuery = companyFlightQuery.OrderBy(x => x.Price);
+                }
+                else
+                {
+                    companyFlightQuery = companyFlightQuery.OrderByDescending(x => x.Price);
+                }
+            }
+
+            var CompanyFlightFilterVM = new CompanyFlightFilter
+            {
+                CompanyFlights = await companyFlightQuery.ToListAsync(),
+                Origins = new SelectList(await originQuery.ToListAsync()),
+                Destinations = new SelectList(await destinationQuery.ToListAsync()),
+                SortTypes = new SelectList(sortTypesList)
+            };
+
+            return View(CompanyFlightFilterVM);
+        }
+
+        // GET: FlightsByDestination
+        public async Task<IActionResult> FlightsByDestination(int? Id, string Title, string Origin, string Destination, string Sort)
+        {
+            IQueryable<CompanyFlight> companyFlightQuery = _context.CompanyFlight.Where(x => x.FlightId == Id).Include(x => x.Flight).Include(x => x.Companies);
+            IQueryable<string> originQuery = _context.CompanyFlight.OrderBy(x => x.Flight.Origin).Select(x => x.Flight.Origin).Distinct();
+            IQueryable<string> destinationQuery = _context.CompanyFlight.OrderBy(x => x.Flight.Destination).Select(x => x.Flight.Destination).Distinct();
+            List<string> sortTypesList = new List<string>(2);
+            sortTypesList.Add("Ascending");
+            sortTypesList.Add("Descending");
+
+            var flight = await _context.Flight.FirstOrDefaultAsync(m => m.Id == Id);
+            ViewBag.MessageOrigin = flight.Origin;
+            ViewBag.MessageDestination = flight.Destination;
+
+            if (!string.IsNullOrEmpty(Title))
+            {
+                companyFlightQuery = companyFlightQuery.Where(x => x.Companies.Title.Contains(Title));
+            }
+            if (!string.IsNullOrEmpty(Origin))
+            {
+                companyFlightQuery = companyFlightQuery.Where(x => x.Flight.Origin.Contains(Origin));
+            }
+            if (!string.IsNullOrEmpty(Destination))
+            {
+                companyFlightQuery = companyFlightQuery.Where(x => x.Flight.Destination.Contains(Destination));
+            }
+            if (!string.IsNullOrEmpty(Sort))
+            {
+                if (string.Compare(Sort, "Ascending") == 0)
+                {
+                    companyFlightQuery = companyFlightQuery.OrderBy(x => x.Price);
+                }
+                else
+                {
+                    companyFlightQuery = companyFlightQuery.OrderByDescending(x => x.Price);
+                }
+            }
+
+            var CompanyFlightFilterVM = new CompanyFlightFilter
+            {
+                CompanyFlights = await companyFlightQuery.ToListAsync(),
+                Origins = new SelectList(await originQuery.ToListAsync()),
+                Destinations = new SelectList(await destinationQuery.ToListAsync()),
+                SortTypes = new SelectList(sortTypesList)
+            };
+
+            return View(CompanyFlightFilterVM);
         }
     }
 }

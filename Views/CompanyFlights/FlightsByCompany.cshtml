@@ -4,15 +4,14 @@
     ViewData["Title"] = "Index";
 }
 
-<h1>Flights</h1>
+<h1>Flights from company "@ViewBag.Message"</h1>
 
 <p>
     <a asp-action="Create">Create New</a>
 </p>
 
-<form asp-controller="CompanyFlights" asp-action="Index" method="get">
+<form asp-controller="CompanyFlights" asp-action="FlightsByCompany" method="get">
     <p>
-        Company name: <input type="text" asp-for="Title" />
         Origin:
         <select asp-for="Origin" asp-items="Model.Origins">
             <option value="">All</option>

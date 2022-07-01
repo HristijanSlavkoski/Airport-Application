@@ -13,5 +13,14 @@ namespace AirportApplication.Models
         [StringLength(100, MinimumLength = 3)]
         [Required]
         public string Destination { get; set; }
+
+        [Display(Name = "Origin-Destination")]
+        public string FlightName
+        {
+            get
+            {
+                return string.Format("{0}-{1}", Origin, Destination);
+            }
+        }
     }
 }
