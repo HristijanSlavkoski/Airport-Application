@@ -215,6 +215,15 @@ namespace AirportApplication.Controllers
                 return Problem("Entity set 'AirportApplicationContext.Company'  is null.");
             }
             var company = await _context.Company.FindAsync(id);
+
+            //If we delete the company, we want the pilots working place to be set to null
+            //so we can remove the company (cascade delete)
+            IQueryable<Pilot> pilots = _context.Pilot.Where(x => x.CompanyId == id);
+            foreach (var pilot in pilots)
+            {
+                pilot.CompanyId = null;
+            }
+
             if (company != null)
             {
                 _context.Company.Remove(company);
