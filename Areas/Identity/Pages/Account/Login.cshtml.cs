@@ -15,6 +15,8 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
+using AirportApplication.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace AirportApplication.Areas.Identity.Pages.Account
 {
@@ -22,11 +24,13 @@ namespace AirportApplication.Areas.Identity.Pages.Account
     {
         private readonly SignInManager<AirportApplicationUser> _signInManager;
         private readonly ILogger<LoginModel> _logger;
+        private readonly AirportApplicationContext _context;
 
-        public LoginModel(SignInManager<AirportApplicationUser> signInManager, ILogger<LoginModel> logger)
+        public LoginModel(SignInManager<AirportApplicationUser> signInManager, ILogger<LoginModel> logger, AirportApplicationContext context)
         {
             _signInManager = signInManager;
             _logger = logger;
+            _context = context;
         }
 
         /// <summary>
@@ -116,6 +120,19 @@ namespace AirportApplication.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User logged in.");
+                    AirportApplicationUser user = await _context.Users.FirstOrDefaultAsync(m => m.Email == Input.Email);
+                    IQueryable<string> roleIdQuery = _context.UserRoles.Where(x => x.UserId == user.Id).Select(x => x.RoleId).AsQueryable();
+                    string roleId = roleIdQuery.FirstOrDefault();
+                    IQueryable<string> roleQuery = _context.Roles.Where(x => x.Id == roleId).Select(x => x.Name).AsQueryable();
+                    string role = roleQuery.FirstOrDefault();
+                    if (role == "Admin")
+                    {
+                        HttpContext.Session.SetString("UserLoggedIn", "Admin");
+                    }
+                    else if (role == "User")
+                    {
+                        HttpContext.Session.SetString("UserLoggedIn", user.Id.ToString());
+                    }
                     return LocalRedirect(returnUrl);
                 }
                 if (result.RequiresTwoFactor)

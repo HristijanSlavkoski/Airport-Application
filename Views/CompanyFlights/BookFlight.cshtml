@@ -51,6 +51,7 @@
     
     <form asp-action="BookFlightCompleted">
         <input type="hidden" asp-for="Id" />
+        <input type="number" id="quantity" name="quantity" value="quantity" required/>
         <input type="submit" value="BookFlight" class="btn btn-primary btn-sm"/> |
         <a asp-action="Index">Back to List</a>
     </form>

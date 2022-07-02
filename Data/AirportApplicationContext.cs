@@ -23,7 +23,11 @@ namespace AirportApplication.Data
         public DbSet<AirportApplication.Models.Flight> Flight { get; set; }
 
         public DbSet<AirportApplication.Models.CompanyFlight> CompanyFlight { get; set; }
-       
+
+        public DbSet<AirportApplication.Models.Cart> Cart { get; set; }
+
+        public DbSet<AirportApplication.Models.CartItem> CartItem { get; set; }
+        
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);

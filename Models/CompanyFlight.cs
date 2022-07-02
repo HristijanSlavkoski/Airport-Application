@@ -27,7 +27,7 @@ namespace AirportApplication.Models
         [Display(Name = "Duration in hours")]
         public int Duration { get; set; }
 
-        public ICollection<CompanyFlight>? CompanyFlights { get; set; }
+        public ICollection<CartItem>? CartItems { get; set; }
 
         [Display(Name = "Date of Flight")]
         public string getDate

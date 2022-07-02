@@ -55,6 +55,18 @@ namespace AirportApplication.Models
                     return;
                 }
 
+                AirportApplicationUser user = context.Users.FirstOrDefault(x => x.UserName.Equals("user@user.com"));
+                Cart cart = context.Cart.FirstOrDefault(x => x.AirportApplicationUserId == user.Id);
+                if(cart == null)
+                {
+                    Cart newCart = new Cart
+                    {
+                        AirportApplicationUserId = user.Id
+                    };
+                    context.Add(newCart);
+                    context.SaveChanges();
+                }
+
                 context.Company.AddRange(
                     new Company
                     {

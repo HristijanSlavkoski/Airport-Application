@@ -19,6 +19,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using AirportApplication.Models;
+using AirportApplication.Data;
 
 namespace AirportApplication.Areas.Identity.Pages.Account
 {
@@ -30,13 +32,15 @@ namespace AirportApplication.Areas.Identity.Pages.Account
         private readonly IUserEmailStore<AirportApplicationUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
+        private readonly AirportApplicationContext _context;
 
         public RegisterModel(
             UserManager<AirportApplicationUser> userManager,
             IUserStore<AirportApplicationUser> userStore,
             SignInManager<AirportApplicationUser> signInManager,
             ILogger<RegisterModel> logger,
-            IEmailSender emailSender)
+            IEmailSender emailSender,
+            AirportApplicationContext context)
         {
             _userManager = userManager;
             _userStore = userStore;
@@ -44,6 +48,7 @@ namespace AirportApplication.Areas.Identity.Pages.Account
             _signInManager = signInManager;
             _logger = logger;
             _emailSender = emailSender;
+            _context = context;
         }
 
         /// <summary>
@@ -118,12 +123,13 @@ namespace AirportApplication.Areas.Identity.Pages.Account
                 await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
                 var result = await _userManager.CreateAsync(user, Input.Password);
-
+                
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User created a new account with password.");
 
                     var userId = await _userManager.GetUserIdAsync(user);
+                    HttpContext.Session.SetString("UserLoggedIn", userId);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
                     var callbackUrl = Url.Page(
@@ -131,7 +137,13 @@ namespace AirportApplication.Areas.Identity.Pages.Account
                         pageHandler: null,
                         values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
                         protocol: Request.Scheme);
-
+                    await _userManager.AddToRoleAsync(user, "User");
+                    Cart newCart = new Cart
+                    {
+                        AirportApplicationUserId = user.Id
+                    };
+                    _context.Add(newCart);
+                    _context.SaveChanges();
                     await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
                         $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
 

@@ -339,7 +339,7 @@ namespace AirportApplication.Controllers
         // GET: CompanyFlights/BookFlightCompleted/5
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "User")]
-        public async Task<IActionResult> BookFlightCompleted(long id)
+        public async Task<IActionResult> BookFlightCompleted(long? id, int quantity)
         {
             if (id == null || _context.CompanyFlight == null)
             {
@@ -354,8 +354,22 @@ namespace AirportApplication.Controllers
             {
                 return NotFound();
             }
+            var userLoggedInId = HttpContext.Session.GetString("UserLoggedIn");
+            var cart = await _context.Cart.FirstOrDefaultAsync(x => x.AirportApplicationUserId.Equals(userLoggedInId));
+            if (cart == null)
+            {
+                return NotFound();
+            }
+            CartItem cartItem = new CartItem
+            {
+                CartId = cart.Id,
+                CompanyFlightId = id,
+                Quantity = quantity
+            };
 
-            return View(companyFlight);
+            _context.Add(cartItem);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
     }
 }

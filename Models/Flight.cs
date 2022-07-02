@@ -14,6 +14,8 @@ namespace AirportApplication.Models
         [Required]
         public string Destination { get; set; }
 
+        public ICollection<CompanyFlight>? CompanyFlights { get; set; }
+
         [Display(Name = "Origin-Destination")]
         public string FlightName
         {

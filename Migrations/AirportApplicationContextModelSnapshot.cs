@@ -87,6 +87,50 @@ namespace AirportApplication.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("AirportApplication.Models.Cart", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("AirportApplicationUserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AirportApplicationUserId");
+
+                    b.ToTable("Cart");
+                });
+
+            modelBuilder.Entity("AirportApplication.Models.CartItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<int?>("CartId")
+                        .HasColumnType("int");
+
+                    b.Property<long?>("CompanyFlightId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CartId");
+
+                    b.HasIndex("CompanyFlightId");
+
+                    b.ToTable("CartItem");
+                });
+
             modelBuilder.Entity("AirportApplication.Models.Company", b =>
                 {
                     b.Property<int>("Id")
@@ -124,9 +168,6 @@ namespace AirportApplication.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
 
-                    b.Property<long?>("CompanyFlightId")
-                        .HasColumnType("bigint");
-
                     b.Property<int>("CompanyId")
                         .HasColumnType("int");
 
@@ -143,8 +184,6 @@ namespace AirportApplication.Migrations
                         .HasColumnType("decimal(18,4)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CompanyFlightId");
 
                     b.HasIndex("CompanyId");
 
@@ -299,10 +338,12 @@ namespace AirportApplication.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
                     b.Property<string>("LoginProvider")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("ProviderKey")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("ProviderDisplayName")
                         .HasColumnType("nvarchar(max)");
@@ -339,10 +380,12 @@ namespace AirportApplication.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("LoginProvider")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("Value")
                         .HasColumnType("nvarchar(max)");
@@ -352,12 +395,32 @@ namespace AirportApplication.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("AirportApplication.Models.CompanyFlight", b =>
+            modelBuilder.Entity("AirportApplication.Models.Cart", b =>
                 {
-                    b.HasOne("AirportApplication.Models.CompanyFlight", null)
-                        .WithMany("CompanyFlights")
+                    b.HasOne("AirportApplication.Areas.Identity.Data.AirportApplicationUser", "AirportApplicationUser")
+                        .WithMany()
+                        .HasForeignKey("AirportApplicationUserId");
+
+                    b.Navigation("AirportApplicationUser");
+                });
+
+            modelBuilder.Entity("AirportApplication.Models.CartItem", b =>
+                {
+                    b.HasOne("AirportApplication.Models.Cart", "Cart")
+                        .WithMany("CartItems")
+                        .HasForeignKey("CartId");
+
+                    b.HasOne("AirportApplication.Models.CompanyFlight", "CompanyFlight")
+                        .WithMany("CartItems")
                         .HasForeignKey("CompanyFlightId");
 
+                    b.Navigation("Cart");
+
+                    b.Navigation("CompanyFlight");
+                });
+
+            modelBuilder.Entity("AirportApplication.Models.CompanyFlight", b =>
+                {
                     b.HasOne("AirportApplication.Models.Company", "Companies")
                         .WithMany("CompanyFlights")
                         .HasForeignKey("CompanyId")
@@ -365,7 +428,7 @@ namespace AirportApplication.Migrations
                         .IsRequired();
 
                     b.HasOne("AirportApplication.Models.Flight", "Flight")
-                        .WithMany()
+                        .WithMany("CompanyFlights")
                         .HasForeignKey("FlightId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -435,6 +498,11 @@ namespace AirportApplication.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("AirportApplication.Models.Cart", b =>
+                {
+                    b.Navigation("CartItems");
+                });
+
             modelBuilder.Entity("AirportApplication.Models.Company", b =>
                 {
                     b.Navigation("CompanyFlights");
@@ -443,6 +511,11 @@ namespace AirportApplication.Migrations
                 });
 
             modelBuilder.Entity("AirportApplication.Models.CompanyFlight", b =>
+                {
+                    b.Navigation("CartItems");
+                });
+
+            modelBuilder.Entity("AirportApplication.Models.Flight", b =>
                 {
                     b.Navigation("CompanyFlights");
                 });
