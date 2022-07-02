@@ -24,7 +24,7 @@ namespace AirportApplication.Models
         [Required]
         public DateTime DateOfFlight { get; set; }
 
-        [Display(Name = "Duration in hours")]
+        [Display(Name = "Duration in minutes")]
         public int Duration { get; set; }
 
         public ICollection<CartItem>? CartItems { get; set; }
