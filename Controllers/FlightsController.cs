@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using AirportApplication.Data;
 using AirportApplication.Models;
 using AirportApplication.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AirportApplication.Controllers
 {
@@ -65,6 +66,7 @@ namespace AirportApplication.Controllers
         }
 
         // GET: Flights/Create
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             return View();
@@ -87,6 +89,7 @@ namespace AirportApplication.Controllers
         }
 
         // GET: Flights/Edit/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null || _context.Flight == null)
@@ -107,6 +110,7 @@ namespace AirportApplication.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Origin,Destination")] Flight flight)
         {
             if (id != flight.Id)
@@ -138,6 +142,7 @@ namespace AirportApplication.Controllers
         }
 
         // GET: Flights/Delete/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _context.Flight == null)
@@ -158,6 +163,7 @@ namespace AirportApplication.Controllers
         // POST: Flights/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             if (_context.Flight == null)

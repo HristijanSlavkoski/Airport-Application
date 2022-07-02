@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using AirportApplication.Data;
 using AirportApplication.Models;
 using AirportApplication.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AirportApplication.Controllers
 {
@@ -63,6 +64,7 @@ namespace AirportApplication.Controllers
         }
 
         // GET: Companies/Create
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             return View();
@@ -73,6 +75,7 @@ namespace AirportApplication.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(AddOrEditCompany viewmodel)
         {
             if (ModelState.IsValid)
@@ -98,6 +101,7 @@ namespace AirportApplication.Controllers
         }
 
         // GET: Companies/Edit/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null || _context.Company == null)
@@ -125,6 +129,7 @@ namespace AirportApplication.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id, AddOrEditCompany viewmodel)
         {
             if (id != viewmodel.Company.Id)
@@ -188,6 +193,7 @@ namespace AirportApplication.Controllers
         }
 
         // GET: Companies/Delete/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _context.Company == null)
@@ -208,6 +214,7 @@ namespace AirportApplication.Controllers
         // POST: Companies/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             if (_context.Company == null)

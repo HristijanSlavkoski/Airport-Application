@@ -4,10 +4,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using AirportApplication.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using AirportApplication.Areas.Identity.Data;
 
 namespace AirportApplication.Data
 {
-    public class AirportApplicationContext : DbContext
+    public class AirportApplicationContext : IdentityDbContext<AirportApplicationUser>
     {
         public AirportApplicationContext (DbContextOptions<AirportApplicationContext> options)
             : base(options)
@@ -21,5 +23,10 @@ namespace AirportApplication.Data
         public DbSet<AirportApplication.Models.Flight> Flight { get; set; }
 
         public DbSet<AirportApplication.Models.CompanyFlight> CompanyFlight { get; set; }
+       
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+        }
     }
 }

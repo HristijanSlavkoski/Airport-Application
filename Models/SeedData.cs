@@ -1,16 +1,55 @@
-﻿using AirportApplication.Data;
+﻿using AirportApplication.Areas.Identity.Data;
+using AirportApplication.Data;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace AirportApplication.Models
 {
     public class SeedData
     {
+        public static async Task CreateUserRoles(IServiceProvider serviceProvider)
+        {
+            var RoleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            var UserManager = serviceProvider.GetRequiredService<UserManager<AirportApplicationUser>>();
+            IdentityResult roleResult;
+            //Add Admin Role
+            var roleCheck = await RoleManager.RoleExistsAsync("Admin");
+            if (!roleCheck) { roleResult = await RoleManager.CreateAsync(new IdentityRole("Admin")); }
+            AirportApplicationUser user = await UserManager.FindByEmailAsync("admin@admin.com");
+            if (user == null)
+            {
+                var User = new AirportApplicationUser();
+                User.Email = "admin@admin.com";
+                User.UserName = "admin@admin.com";
+                string userPWD = "Admin123";
+                IdentityResult chkUser = await UserManager.CreateAsync(User, userPWD);
+                //Add default User to Role Admin
+                if (chkUser.Succeeded) { var result1 = await UserManager.AddToRoleAsync(User, "Admin"); }
+            }
+            //Add User Role
+            roleCheck = await RoleManager.RoleExistsAsync("User");
+            if (!roleCheck) { roleResult = await RoleManager.CreateAsync(new IdentityRole("User")); }
+            user = await UserManager.FindByEmailAsync("user@user.com");
+            if (user == null)
+            {
+                var User = new AirportApplicationUser();
+                User.Email = "user@user.com";
+                User.UserName = "user@user.com";
+                string userPWD = "User1234";
+                IdentityResult chkUser = await UserManager.CreateAsync(User, userPWD);
+                //Add default User to Role User
+                if (chkUser.Succeeded) { var result1 = await UserManager.AddToRoleAsync(User, "User"); }
+            }
+        }
+
         public static void Initialize(IServiceProvider serviceProvider)
         {
             using (var context = new AirportApplicationContext(
                 serviceProvider.GetRequiredService<
                     DbContextOptions<AirportApplicationContext>>()))
             {
+                CreateUserRoles(serviceProvider).Wait();
+
                 if (context.Company.Any() || context.Pilot.Any() || context.Flight.Any())
                 {
                     return;

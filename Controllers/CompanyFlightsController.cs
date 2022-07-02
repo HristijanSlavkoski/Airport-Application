@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using AirportApplication.Data;
 using AirportApplication.Models;
 using AirportApplication.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AirportApplication.Controllers
 {
@@ -87,6 +88,7 @@ namespace AirportApplication.Controllers
         }
 
         // GET: CompanyFlights/Create
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             ViewData["CompanyId"] = new SelectList(_context.Company, "Id", "Title");
@@ -99,6 +101,7 @@ namespace AirportApplication.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([Bind("Id,CompanyId,FlightId,Price,DateOfFlight,Duration")] CompanyFlight companyFlight)
         {
             if (ModelState.IsValid)
@@ -113,6 +116,7 @@ namespace AirportApplication.Controllers
         }
 
         // GET: CompanyFlights/Edit/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(long? id)
         {
             if (id == null || _context.CompanyFlight == null)
@@ -135,6 +139,7 @@ namespace AirportApplication.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(long id, [Bind("Id,CompanyId,FlightId,Price,DateOfFlight,Duration")] CompanyFlight companyFlight)
         {
             if (id != companyFlight.Id)
@@ -168,6 +173,7 @@ namespace AirportApplication.Controllers
         }
 
         // GET: CompanyFlights/Delete/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(long? id)
         {
             if (id == null || _context.CompanyFlight == null)
@@ -190,6 +196,7 @@ namespace AirportApplication.Controllers
         // POST: CompanyFlights/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(long id)
         {
             if (_context.CompanyFlight == null)
@@ -306,6 +313,49 @@ namespace AirportApplication.Controllers
             };
 
             return View(CompanyFlightFilterVM);
+        }
+
+        // GET: CompanyFlights/BookFlight/5
+        [Authorize(Roles = "User")]
+        public async Task<IActionResult> BookFlight(long? id)
+        {
+            if (id == null || _context.CompanyFlight == null)
+            {
+                return NotFound();
+            }
+
+            var companyFlight = await _context.CompanyFlight
+                .Include(c => c.Companies)
+                .Include(c => c.Flight)
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (companyFlight == null)
+            {
+                return NotFound();
+            }
+
+            return View(companyFlight);
+        }
+
+        // GET: CompanyFlights/BookFlightCompleted/5
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "User")]
+        public async Task<IActionResult> BookFlightCompleted(long id)
+        {
+            if (id == null || _context.CompanyFlight == null)
+            {
+                return NotFound();
+            }
+
+            var companyFlight = await _context.CompanyFlight
+                .Include(c => c.Companies)
+                .Include(c => c.Flight)
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (companyFlight == null)
+            {
+                return NotFound();
+            }
+
+            return View(companyFlight);
         }
     }
 }
