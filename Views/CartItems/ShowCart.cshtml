@@ -47,7 +47,8 @@
                 @Html.DisplayFor(modelItem => item.getTotalPricePerFlight)$
             </td>
             <td>
-                <a asp-action="Delete" asp-route-id="@item.Id">Remove booked flight</a>
+                <a asp-action="Delete" asp-route-id="@item.Id">Remove booked flight</a> |
+                <a asp-action="Edit" asp-route-id="@item.Id">Edit quantity</a>
             </td>
         </tr>
 }

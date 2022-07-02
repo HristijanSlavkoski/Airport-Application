@@ -77,7 +77,10 @@ namespace AirportApplication.Controllers
                 return NotFound();
             }
 
-            var cartItem = await _context.CartItem.FindAsync(id);
+            var cartItem = await _context.CartItem
+                .Include(x => x.Cart).Include(x => x.CompanyFlight).ThenInclude(x => x.Flight).Include(x => x.CompanyFlight).ThenInclude(x => x.Companies)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
             if (cartItem == null)
             {
                 return NotFound();
@@ -91,35 +94,20 @@ namespace AirportApplication.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,CartId,CompanyFlightId,Quantity")] CartItem cartItem)
+        public async Task<IActionResult> Edit(int id, int quantity)
         {
-            if (id != cartItem.Id)
+            var cartItem = await _context.CartItem
+                .Include(x => x.Cart).Include(x => x.CompanyFlight).ThenInclude(x => x.Flight).Include(x => x.CompanyFlight).ThenInclude(x => x.Companies)
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (cartItem == null)
             {
                 return NotFound();
             }
+            cartItem.Quantity = quantity;
+            _context.Update(cartItem);
+            await _context.SaveChangesAsync();
 
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(cartItem);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!CartItemExists(cartItem.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["CartId"] = new SelectList(_context.Cart, "Id", "Id", cartItem.CartId);
-            return View(cartItem);
+            return RedirectToAction(nameof(ShowCart));
         }
 
         // GET: CartItems/Delete/5
